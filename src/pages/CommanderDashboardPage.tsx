@@ -144,10 +144,10 @@ export const CommanderDashboardPage: React.FC = () => {
     const cntWx = useCountUp(COMMANDER_METRICS.weatherRisks);
     const cntAlerts = useCountUp(COMMANDER_METRICS.criticalAlerts);
 
-    // Map tile URL — dark Carto or fallback to OpenStreetMap
-    const tileUrlDark = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    const tileUrlLight = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const tileUrl = tileError ? tileUrlLight : (isDark ? tileUrlDark : tileUrlLight);
+    // Map tile URL — Stadia Alidade Smooth Dark/Light (free, no API key required)
+    const tileUrl = isDark
+        ? `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png`
+        : `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png`;
 
     // Station markers data
     const stationMarkers = [
@@ -278,8 +278,8 @@ export const CommanderDashboardPage: React.FC = () => {
                                     key={f}
                                     onClick={() => setMapFilter(f)}
                                     className={`text-[9px] font-mono px-2.5 py-1 rounded border transition-colors cursor-pointer ${mapFilter === f
-                                            ? 'bg-[var(--polar-cyan)] text-[var(--bg-app)] border-[var(--polar-cyan)] font-bold'
-                                            : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]'
+                                        ? 'bg-[var(--polar-cyan)] text-[var(--bg-app)] border-[var(--polar-cyan)] font-bold'
+                                        : 'bg-[var(--surface-elevated)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:text-[var(--text-primary)]'
                                         }`}
                                 >
                                     {f}
@@ -297,8 +297,11 @@ export const CommanderDashboardPage: React.FC = () => {
                             className="z-0"
                         >
                             <TileLayer
+                                key={theme}
                                 url={tileUrl}
-                                attribution=""
+                                attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                maxZoom={20}
+                                tileSize={256}
                                 eventHandlers={{ tileerror: () => setTileError(true) }}
                             />
 

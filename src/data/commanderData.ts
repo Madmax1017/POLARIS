@@ -26,8 +26,8 @@ export const COMMANDER_METRICS = {
     activeAssets: 38,
 
     cargoInTransit: MOCK_CARGO.filter(
-        (c) => c.status === 'IN_TRANSIT' || c.status === 'LOADED_PORT'
-    ).length + 10, // additional cargo movements tracked via logistic nodes
+        (c) => c.status === 'IN_TRANSIT' || c.status === 'LOADED_PORT' || c.status === 'CUSTOMS_CLEARANCE'
+    ).length,
 
     weatherRisks: 3,
 
@@ -320,10 +320,10 @@ export const INTEL_RECOMMENDATIONS: IntelRecommendation[] = [
 // ─── Logistics Status ────────────────────────────────────────────────────────
 
 export const LOGISTICS_STATUS = {
-    inTransit: 12,
-    awaitingDispatch: 6,
-    deliveredToday: 18,
-    delayed: 2,
+    inTransit: MOCK_CARGO.filter((c) => c.status === 'IN_TRANSIT').length,
+    awaitingDispatch: MOCK_CARGO.filter((c) => c.status === 'LOADED_PORT').length,
+    deliveredToday: MOCK_CARGO.filter((c) => c.status === 'DELIVERED').length,
+    delayed: MOCK_CARGO.filter((c) => c.status === 'CUSTOMS_CLEARANCE').length,
 };
 
 export interface LogisticsRoute {

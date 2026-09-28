@@ -1,8 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MOCK_CARGO } from '../data/mockData';
 import { Truck, Anchor } from 'lucide-react';
 
 export const LogisticsPage: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6 font-sans text-[var(--text-primary)]">
       {/* Header */}
@@ -22,7 +25,8 @@ export const LogisticsPage: React.FC = () => {
         {MOCK_CARGO.map((item) => (
           <div
             key={item.id}
-            className="bg-[var(--surface-primary)] border border-[var(--border-primary)] rounded-xl p-6 shadow-2xs space-y-4 text-[var(--text-primary)] hover:border-[var(--polar-cyan)]/40 transition-all"
+            onClick={() => navigate(`/logistics/track/${item.id}`)}
+            className="bg-[var(--surface-primary)] border border-[var(--border-primary)] rounded-xl p-6 shadow-2xs space-y-4 text-[var(--text-primary)] hover:border-[var(--polar-cyan)]/40 transition-all cursor-pointer"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
               <div>

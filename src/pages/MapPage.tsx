@@ -134,10 +134,11 @@ export const MapPage: React.FC = () => {
     setFitBoundsTrigger((prev) => prev + 1);
   };
 
-  // Select Map Tile URL based on global theme
+  // Select map tile URL based on global theme
+  // Dark mode → Stadia Alidade Smooth Dark | Light mode → Stadia Alidade Smooth
   const tileUrl = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    ? `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png`
+    : `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png`;
 
   return (
     <div className="space-y-4 font-sans text-[var(--text-primary)]">
@@ -181,8 +182,8 @@ export const MapPage: React.FC = () => {
               key={r}
               onClick={() => setRegionFilter(r)}
               className={`px-3 py-1 rounded-lg text-xs transition-colors cursor-pointer font-medium ${regionFilter === r
-                  ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border border-[var(--polar-cyan)]/30 font-semibold'
-                  : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border border-[var(--polar-cyan)]/30 font-semibold'
+                : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
                 }`}
             >
               {r}
@@ -236,10 +237,10 @@ export const MapPage: React.FC = () => {
                     key={st.id}
                     onClick={() => focusStation(st)}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 ${isSelected
-                        ? 'bg-[var(--polar-cyan)]/10 border-[var(--polar-cyan)] shadow-2xs'
-                        : isAlertNode
-                          ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
-                          : 'bg-[var(--surface-elevated)] border-[var(--border-subtle)] hover:border-[var(--border-primary)]'
+                      ? 'bg-[var(--polar-cyan)]/10 border-[var(--polar-cyan)] shadow-2xs'
+                      : isAlertNode
+                        ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
+                        : 'bg-[var(--surface-elevated)] border-[var(--border-subtle)] hover:border-[var(--border-primary)]'
                       }`}
                   >
                     <div className="flex items-center justify-between">
@@ -249,8 +250,8 @@ export const MapPage: React.FC = () => {
                       </div>
                       <span
                         className={`px-2 py-0.5 rounded-md text-xs font-semibold ${st.status === 'OPTIMAL'
-                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
-                            : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
+                          ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                          : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
                           }`}
                       >
                         {st.status}
@@ -338,12 +339,13 @@ export const MapPage: React.FC = () => {
               fitBoundsTrigger={fitBoundsTrigger}
             />
 
-            {/* Dynamic Tile Layer switching between Dark Matter and Voyager */}
+            {/* Dynamic Tile Layer switching between Google Satellite and Roadmap */}
             <TileLayer
               key={theme}
               url={tileUrl}
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              maxZoom={18}
+              attribution='&copy; <a href="https://maps.google.com">Google Maps</a>'
+              maxZoom={20}
+              tileSize={256}
               eventHandlers={{
                 tileerror: () => {
                   setTileLoadError(true);
@@ -376,8 +378,8 @@ export const MapPage: React.FC = () => {
                         </div>
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-semibold ${st.status === 'OPTIMAL'
-                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
-                              : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
+                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                            : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
                             }`}
                         >
                           {st.status}
@@ -461,7 +463,7 @@ export const MapPage: React.FC = () => {
           {tileLoadError && (
             <div className="absolute bottom-4 left-4 z-40 bg-[var(--surface-primary)] border border-[var(--border-primary)] p-2.5 rounded-lg text-[var(--text-secondary)] text-xs font-sans flex items-center space-x-2 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-              <span>Offline Tile Mode Fallback Active</span>
+              <span>Google Maps tile load error — check API key or network</span>
             </div>
           )}
         </div>

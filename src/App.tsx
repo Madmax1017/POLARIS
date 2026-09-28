@@ -13,6 +13,7 @@ import { MapPage } from './pages/MapPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { CargoTrackingPage } from './pages/CargoTrackingPage';
 
 export const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ export const App: React.FC = () => {
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/logistics/track/:cargoId" element={<CargoTrackingPage />} />
         </Route>
 
         {/* Fallback Catch-all -> Root Intro */}

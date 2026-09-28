@@ -175,3 +175,781 @@
   border-color: var(--polar-cyan);
   outline: none;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CARGO ROUTE SIMULATION (Map Tracking View)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Shared Panel Base */
+.tracking-panel {
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tracking-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+}
+
+.tracking-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Route Info Panel */
+.route-info-panel {
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rip-tracking-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--polar-cyan);
+  padding: 4px 8px;
+  background: rgba(168, 199, 209, 0.1);
+  border: 1px solid rgba(168, 199, 209, 0.2);
+  border-radius: 6px;
+}
+
+.rip-vessel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rip-vessel-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(168, 199, 209, 0.1);
+  border: 1px solid rgba(168, 199, 209, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--polar-cyan);
+}
+
+.rip-vessel-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.rip-vessel-type {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.rip-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.rip-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+}
+
+.rip-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.rip-status-in_transit {
+  color: var(--polar-cyan);
+  background: rgba(168, 199, 209, 0.1);
+  border-color: rgba(168, 199, 209, 0.3);
+}
+
+.rip-status-loaded_port {
+  color: var(--status-warning);
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+.rip-status-customs_clearance {
+  color: var(--status-warning);
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
+}
+
+.rip-status-delivered {
+  color: var(--status-success);
+  background: rgba(22, 163, 74, 0.1);
+  border-color: rgba(22, 163, 74, 0.3);
+}
+
+.rip-route {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rip-route-path {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rip-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rip-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rip-progress-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rip-progress-bar-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rip-progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.rip-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rip-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rip-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.rip-stat-highlight {
+  color: var(--polar-cyan);
+}
+
+.rip-checkpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: rgba(168, 199, 209, 0.05);
+  border-left: 2px solid var(--polar-cyan);
+  border-radius: 0 6px 6px 0;
+}
+
+.rip-checkpoint-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rip-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.rip-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rip-telemetry-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.rip-telemetry-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+  margin-bottom: 2px;
+}
+
+.rip-telemetry-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #fff;
+}
+
+.rip-altitude {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Environment Panel */
+.env-panel {
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.env-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+}
+
+.env-route-condition {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.env-condition-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid;
+  width: fit-content;
+}
+
+.env-condition-msg {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.env-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.env-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.env-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.env-station-item,
+.env-asset-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.env-station-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.env-station-count {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.env-asset-icon {
+  color: var(--text-muted);
+}
+
+.env-asset-name {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.env-asset-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.env-conditions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.env-cond-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.env-cond-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.env-cond-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #fff;
+}
+
+.env-ice-card {
+  background: rgba(168, 199, 209, 0.05);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.env-ice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.env-ice-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.env-ice-desc {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.env-ice-details {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* Route Timeline */
+.route-timeline {
+  width: 100%;
+}
+
+.rt-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.rt-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+}
+
+.rt-node-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-primary);
+  border: 2px solid;
+}
+
+.rt-node-completed .rt-node-icon {
+  border-color: var(--status-success);
+  color: var(--status-success);
+}
+
+.rt-node-current .rt-node-icon {
+  border-color: var(--polar-cyan);
+  color: var(--polar-cyan);
+  box-shadow: 0 0 10px rgba(168, 199, 209, 0.4);
+}
+
+.rt-node-upcoming .rt-node-icon {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rt-node-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary);
+  max-width: 90px;
+  line-height: 1.2;
+}
+
+.rt-node-upcoming .rt-node-label {
+  color: var(--text-secondary);
+}
+
+.rt-node-eta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.rt-connector {
+  flex: 1;
+  height: 2px;
+  margin: 0 -2px;
+  margin-bottom: 24px;
+  z-index: 1;
+}
+
+.rt-connector-done {
+  background: var(--polar-cyan);
+  opacity: 0.8;
+}
+
+.rt-connector-pending {
+  background: rgba(255, 255, 255, 0.1);
+  border-top: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+/* Simulation Controls */
+.sim-controls {
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 20px;
+  border-radius: 30px;
+}
+
+.sim-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.sim-controls-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sim-play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--polar-cyan);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sim-play-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(168, 199, 209, 0.4);
+}
+
+.sim-speed-group {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sim-speed-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.sim-speed-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sim-speed-active {
+  background: rgba(168, 199, 209, 0.15);
+  color: var(--polar-cyan);
+}
+
+.sim-telemetry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sim-telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+}
+
+.sim-telemetry-label {
+  color: var(--text-muted);
+}
+
+.sim-telemetry-value {
+  color: var(--polar-cyan);
+}
+
+/* Route Intelligence */
+.route-intel {
+  background: rgba(10, 10, 15, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(168, 199, 209, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 16px;
+}
+
+.ri-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ri-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: inherit;
+}
+
+.ri-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ri-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.ri-icon {
+  font-weight: bold;
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.ri-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+/* Map Popup */
+.map-popup {
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  width: 260px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #fff;
+}
+
+.mp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mp-type-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+  letter-spacing: 0.05em;
+}
+
+.mp-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.mp-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.mp-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.mp-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mp-detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.mp-detail-key {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.mp-detail-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  text-align: right;
+}
