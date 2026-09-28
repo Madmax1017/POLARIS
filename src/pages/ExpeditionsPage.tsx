@@ -1,83 +1,190 @@
-import React from 'react';
-import { MOCK_EXPEDITIONS } from '../data/mockData';
-import { Compass, Calendar, MapPin, Users, Plus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Compass, Plus, MapPin, Users, Package, Truck, Clock, CheckCircle2, AlertTriangle, XCircle, Eye, ChevronRight } from 'lucide-react';
+import { Mission } from '../types';
+import { useMissionStore } from '../stores/useMissionStore';
 
-export const ExpeditionsPage: React.FC = () => {
+const STATUS_TABS = ['ALL', 'PLANNED', 'READY', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const;
+
+const STATUS_STYLES: Record<string, string> = {
+  PLANNING: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+  PLANNED: 'text-[var(--polar-cyan)] bg-[var(--polar-cyan)]/10 border-[var(--polar-cyan)]/30',
+  READY: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  ACTIVE: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  COMPLETED: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+  CANCELLED: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+};
+
+const PRIORITY_STYLES: Record<string, string> = {
+  Critical: 'text-rose-400 bg-rose-500/10 border-rose-500/30',
+  High: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+  Routine: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+};
+
+const READINESS_ICON: Record<string, React.ReactNode> = {
+  READY: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />,
+  'REVIEW REQUIRED': <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />,
+  'NOT READY': <XCircle className="w-3.5 h-3.5 text-rose-400" />,
+};
+
+const MissionCard: React.FC<{ mission: Mission }> = ({ mission }) => {
+  const navigate = useNavigate();
+  const sorted = [...mission.checkpoints].sort((a, b) => a.order - b.order);
+  const fmt = (dt: string) => { try { return new Date(dt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + new Date(dt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }); } catch { return dt; } };
+  const totalCargo = mission.cargo.reduce((s, c) => s + c.quantity * (c.unit === 'L' ? 0.0008 : c.unit === 'kg' ? 0.001 : 0.05), 0);
+
   return (
-    <div className="space-y-6 font-sans text-[var(--text-primary)]">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center">
-            <Compass className="w-5 h-5 mr-2 text-[var(--polar-cyan)]" /> Expedition Planning & Timeline Scheduling
-          </h2>
-          <p className="text-xs text-[var(--text-secondary)] font-sans mt-0.5">
-            Phase tracking, team composition, route planning, and seasonal window allocation across Indian Polar Stations.
-          </p>
+    <div className="bg-[var(--surface-primary)] border border-[var(--border-primary)] rounded-xl p-5 hover:border-[var(--polar-cyan)]/30 transition-all space-y-4">
+      {/* Top bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--border-subtle)]">
+        <div className="space-y-1">
+          <p className="text-xs font-mono font-bold text-[var(--polar-cyan)]">{mission.id}</p>
+          <h3 className="text-base font-bold text-[var(--text-primary)] uppercase tracking-wide">{mission.name}</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border ${PRIORITY_STYLES[mission.priority] || ''}`}>{mission.priority.toUpperCase()} PRIORITY</span>
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">{mission.type}</span>
+          </div>
         </div>
-        <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-sans font-semibold text-xs rounded-xl shadow-2xs flex items-center space-x-2 shrink-0 transition-colors cursor-pointer">
-          <Plus className="w-4 h-4" />
-          <span>NEW EXPEDITION PLAN</span>
-        </button>
+        <span className={`self-start sm:self-auto text-xs font-mono font-bold px-3 py-1 rounded-full border ${STATUS_STYLES[mission.status] || ''}`}>{mission.status}</span>
       </div>
 
-      {/* Expeditions List Cards */}
-      <div className="grid grid-cols-1 gap-4">
-        {MOCK_EXPEDITIONS.map((exp) => (
-          <div
-            key={exp.id}
-            className="bg-[var(--surface-primary)] border border-[var(--border-primary)] rounded-xl p-6 shadow-2xs hover:border-[var(--polar-cyan)]/40 transition-all space-y-4 text-[var(--text-primary)]"
-          >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-4">
-              <div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-xs font-mono font-semibold text-[var(--polar-cyan)] px-2.5 py-1 rounded bg-[var(--polar-cyan)]/10 border border-[var(--polar-cyan)]/30">
-                    {exp.code}
-                  </span>
-                  <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] font-medium">
-                    Phase: {exp.phase}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-[var(--text-primary)] mt-2">{exp.name}</h3>
-              </div>
-              <span
-                className={`self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold ${exp.status === 'ON_SCHEDULE'
-                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
-                  }`}
-              >
-                STATUS: {exp.status}
-              </span>
-            </div>
+      {/* Route */}
+      {sorted.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-mono">
+          <MapPin className="w-3 h-3 text-[var(--polar-cyan)] shrink-0" />
+          {sorted.map((cp, i) => (
+            <React.Fragment key={cp.id}>
+              <span className="text-[var(--text-secondary)]">{cp.name}</span>
+              {i < sorted.length - 1 && <ChevronRight className="w-3 h-3 text-[var(--text-muted)]" />}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans text-[var(--text-secondary)]">
-              <div className="flex items-center space-x-3 bg-[var(--surface-elevated)] p-3.5 rounded-xl border border-[var(--border-subtle)]">
-                <Users className="w-4 h-4 text-[var(--polar-cyan)] shrink-0" />
-                <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase">LEAD & TEAM</p>
-                  <p className="font-semibold text-[var(--text-primary)] mt-0.5">{exp.leadScientist} ({exp.teamCount} members)</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 bg-[var(--surface-elevated)] p-3.5 rounded-xl border border-[var(--border-subtle)]">
-                <Calendar className="w-4 h-4 text-[var(--polar-cyan)] shrink-0" />
-                <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase">EXPEDITION WINDOW</p>
-                  <p className="font-semibold text-[var(--text-primary)] mt-0.5">{exp.startDate} → {exp.targetCompletion}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 bg-[var(--surface-elevated)] p-3.5 rounded-xl border border-[var(--border-subtle)]">
-                <MapPin className="w-4 h-4 text-[var(--polar-cyan)] shrink-0" />
-                <div>
-                  <p className="text-[10px] text-[var(--text-muted)] font-semibold uppercase">ROUTE MATRIX</p>
-                  <p className="font-semibold text-[var(--text-primary)] mt-0.5 truncate">{exp.routeSummary}</p>
-                </div>
-              </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {[
+          { icon: <Clock className="w-3.5 h-3.5 text-[var(--polar-cyan)]" />, label: 'SCHEDULE', val: mission.departureTime ? fmt(mission.departureTime) : '—' },
+          { icon: <Users className="w-3.5 h-3.5 text-[var(--polar-cyan)]" />, label: 'PERSONNEL', val: `${mission.personnel.length} ASSIGNED` },
+          { icon: <Truck className="w-3.5 h-3.5 text-[var(--polar-cyan)]" />, label: 'ASSETS', val: `${mission.assets.length} ASSIGNED` },
+          { icon: <Package className="w-3.5 h-3.5 text-[var(--polar-cyan)]" />, label: 'CARGO', val: `~${totalCargo.toFixed(1)} MT` },
+        ].map(({ icon, label, val }) => (
+          <div key={label} className="bg-[var(--surface-elevated)] border border-[var(--border-subtle)] rounded-lg p-2 flex items-start gap-2">
+            {icon}
+            <div>
+              <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase">{label}</p>
+              <p className="text-xs font-bold text-[var(--text-primary)] font-mono mt-0.5">{val}</p>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Bottom */}
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-1.5">
+          {READINESS_ICON[mission.overallReadiness]}
+          <span className="text-[10px] font-mono text-[var(--text-secondary)]">READINESS: <span className="font-bold">{mission.overallReadiness}</span></span>
+        </div>
+        <button
+          onClick={() => navigate(`/missions/${mission.id}`)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-lg text-xs font-mono font-bold text-[var(--text-primary)] hover:border-[var(--polar-cyan)] hover:text-[var(--polar-cyan)] transition cursor-pointer"
+        >
+          <Eye className="w-3.5 h-3.5" /> VIEW MISSION
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export const ExpeditionsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { missions, seedMissions, isSeeded } = useMissionStore();
+  const [activeTab, setActiveTab] = useState<typeof STATUS_TABS[number]>('ALL');
+  const [createdId, setCreatedId] = useState<string | null>(null);
+
+  useEffect(() => { if (!isSeeded) seedMissions(); }, [isSeeded]);
+
+  useEffect(() => {
+    const id = searchParams.get('created');
+    if (id) { setCreatedId(id); setTimeout(() => setCreatedId(null), 6000); }
+  }, [searchParams]);
+
+  const filtered = missions.filter(m => activeTab === 'ALL' || m.status === activeTab);
+  const counts = STATUS_TABS.reduce((acc, tab) => {
+    acc[tab] = tab === 'ALL' ? missions.length : missions.filter(m => m.status === tab).length;
+    return acc;
+  }, {} as Record<string, number>);
+
+  return (
+    <div className="space-y-5 font-sans text-[var(--text-primary)]">
+      {/* Success Banner */}
+      {createdId && (
+        <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-emerald-400">MISSION CREATED</p>
+            <p className="text-xs text-[var(--text-secondary)]"><span className="font-mono font-bold">{createdId}</span> has been added to the mission registry.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
+            <Compass className="w-5 h-5 text-[var(--polar-cyan)]" /> Missions — Expedition Operations Registry
+          </h2>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-sans">Operational record of all planned, active and completed polar missions.</p>
+        </div>
+        <button
+          onClick={() => navigate('/missions/plan')}
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover)] text-[var(--btn-primary-text)] font-mono font-bold text-xs rounded-xl shadow-sm transition cursor-pointer shrink-0"
+        >
+          <Plus className="w-4 h-4" /> PLAN NEW MISSION
+        </button>
+      </div>
+
+      {/* Stat Strip */}
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+        {STATUS_TABS.slice(1).map(tab => (
+          <div key={tab} className="bg-[var(--surface-elevated)] border border-[var(--border-subtle)] rounded-lg p-2 text-center">
+            <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase">{tab}</p>
+            <p className="text-lg font-mono font-bold text-[var(--text-primary)]">{counts[tab] || 0}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-[var(--border-subtle)] overflow-x-auto">
+        {STATUS_TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-3 py-2 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0 border-b-2 transition cursor-pointer ${activeTab === tab
+                ? 'border-[var(--polar-cyan)] text-[var(--polar-cyan)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+              }`}
+          >
+            {tab} {counts[tab] > 0 && <span className="ml-1">({counts[tab]})</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* Mission Cards */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-[var(--text-muted)]">
+          <Compass className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm font-mono">No missions found in this category.</p>
+          <button onClick={() => navigate('/missions/plan')} className="mt-4 flex items-center gap-1.5 px-4 py-2 border border-dashed border-[var(--border-primary)] rounded-xl text-xs font-mono text-[var(--polar-cyan)] hover:border-[var(--polar-cyan)] transition cursor-pointer mx-auto">
+            <Plus className="w-3.5 h-3.5" /> PLAN FIRST MISSION
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {filtered.map(m => <MissionCard key={m.id} mission={m} />)}
+        </div>
+      )}
     </div>
   );
 };

@@ -229,7 +229,7 @@ export const ROUTE_SIMULATIONS: Record<string, CargoSimulation> = {
         routeProgress: 0,
         distanceRemaining: '5,400 km',
         distanceTotal: '5,400 km',
-        eta: '2026-10-14',
+        eta: `${new Date().getFullYear()}-10-14`,
         nextCheckpoint: 'Departure',
         altitude: 'Grounded',
         checkpoints: [

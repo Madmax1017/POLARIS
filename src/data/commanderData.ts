@@ -344,14 +344,14 @@ export const ACTIVE_ROUTES: LogisticsRoute[] = [
         via: 'Southern Ocean',
         status: 'IN TRANSIT',
         eta: '18 days',
-        trackingId: 'MV-VASILIY-GOLOVNIN-2026-A',
+        trackingId: `MV-VASILIY-GOLOVNIN-${new Date().getFullYear()}-A`,
     },
     {
         id: 'rt-02',
         from: 'Cape Town Airport',
         to: 'ALCI Ice Runway',
         status: 'LOADED',
-        eta: '4 Oct 2026',
+        eta: `4 Oct ${new Date().getFullYear()}`,
         trackingId: 'DROMLAN-AIR-CARGO-44',
     },
 ];

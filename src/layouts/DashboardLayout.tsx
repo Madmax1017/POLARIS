@@ -36,7 +36,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Expeditions', path: '/expeditions', icon: Compass },
+  { name: 'Missions', path: '/missions', icon: Compass },
   { name: 'Personnel', path: '/personnel', icon: Users },
   { name: 'Inventory', path: '/inventory', icon: Package },
   { name: 'Logistics & Cargo', path: '/logistics', icon: Truck },
@@ -63,6 +63,12 @@ export const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (user?.stationId) {
@@ -193,7 +199,7 @@ export const DashboardLayout: React.FC = () => {
           <nav className="p-3 space-y-1">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
               return (
                 <Link
                   key={item.path}
@@ -256,7 +262,7 @@ export const DashboardLayout: React.FC = () => {
                 </span>
               </h1>
               <p className="text-xs text-[var(--text-muted)] font-mono hidden sm:block">
-                Station Mode: {activeStationObj.riskProfile} | 10 Sep 2026 · 00:43 IST
+                Station Mode: {activeStationObj.riskProfile} | {now.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} IST
               </p>
             </div>
           </div>
