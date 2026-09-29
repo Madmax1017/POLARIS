@@ -398,3 +398,215 @@ export const MOCK_USERS: UserProfile[] = [
     clearanceLevel: 'ALPHA',
   },
 ];
+
+// ─── MOCK VESSELS ─────────────────────────────────────────────────────────────
+export interface MockVessel {
+  id: string;
+  name: string;
+  type: 'ICEBREAKER' | 'SUPPLY_SHIP' | 'RESEARCH_VESSEL';
+  flag: string;
+  coordinates: { lat: number; lng: number };
+  speedKnots: number;
+  headingDeg: number;
+  status: 'UNDERWAY' | 'AT_ANCHOR' | 'IN_PORT' | 'STANDBY';
+  destination: string;
+  etaHours: number;
+  cargo: string;
+}
+
+export const MOCK_VESSELS: MockVessel[] = [
+  {
+    id: 'vsl-01',
+    name: 'MV Vasiliy Golovnin',
+    type: 'ICEBREAKER',
+    flag: 'RUS',
+    coordinates: { lat: -53.4, lng: 12.8 },   // Mid-Atlantic, en route to Antarctic
+    speedKnots: 12.4,
+    headingDeg: 183,
+    status: 'UNDERWAY',
+    destination: 'Maitri Coastal Unloading Point',
+    etaHours: 312,
+    cargo: '350,000L Fuel • 120T Rations • Snow-Cats',
+  },
+  {
+    id: 'vsl-02',
+    name: 'SA Agulhas II',
+    type: 'SUPPLY_SHIP',
+    flag: 'ZAF',
+    coordinates: { lat: -42.2, lng: 56.1 },   // Southern Indian Ocean
+    speedKnots: 14.1,
+    headingDeg: 162,
+    status: 'UNDERWAY',
+    destination: 'Bharati Station Wharf',
+    etaHours: 96,
+    cargo: '5,400 kg Provisions & Freeze-Dried Rations',
+  },
+  {
+    id: 'vsl-03',
+    name: 'MV Nuyina',
+    type: 'RESEARCH_VESSEL',
+    flag: 'AUS',
+    coordinates: { lat: -65.3, lng: 93.6 },   // Southern Ocean, Davis Sea
+    speedKnots: 0,
+    headingDeg: 0,
+    status: 'AT_ANCHOR',
+    destination: 'Prydz Bay Survey Grid',
+    etaHours: 0,
+    cargo: 'Scientific Equipment — Oceanographic Survey Suite',
+  },
+];
+
+// ─── MOCK CARGO ROUTES ────────────────────────────────────────────────────────
+// Each entry is an array of [lat, lng] waypoints forming a polyline on the map.
+export interface MockCargoRoute {
+  id: string;
+  vesselId: string;
+  label: string;
+  color: string;
+  waypoints: [number, number][];
+}
+
+export const MOCK_CARGO_ROUTES: MockCargoRoute[] = [
+  {
+    id: 'cr-01',
+    vesselId: 'vsl-01',
+    label: 'MV Vasiliy Golovnin — Cape Town → Maitri',
+    color: '#F59E0B',   // amber
+    waypoints: [
+      [-33.9, 18.4],   // Cape Town
+      [-40.5, 15.1],   // Departure point
+      [-53.4, 12.8],   // Current position
+      [-63.0, 11.9],   // Antarctic convergence
+      [-70.3, 11.5],   // Coastal approach
+      [-70.8, 11.7],   // Maitri unloading point
+    ],
+  },
+  {
+    id: 'cr-02',
+    vesselId: 'vsl-02',
+    label: 'SA Agulhas II — Cape Town → Bharati',
+    color: '#22C55E',  // green
+    waypoints: [
+      [-33.9, 18.4],   // Cape Town
+      [-38.2, 38.9],   // Indian Ocean waypoint
+      [-42.2, 56.1],   // Current position
+      [-57.0, 72.5],   // Antarctic convergence
+      [-65.8, 75.8],   // Coastal approach
+      [-69.4, 76.2],   // Bharati Wharf
+    ],
+  },
+  {
+    id: 'cr-03',
+    vesselId: 'vsl-03',
+    label: 'MV Nuyina — Fremantle → Prydz Bay Survey Grid',
+    color: '#A78BFA',  // violet
+    waypoints: [
+      [-32.0, 115.7],  // Fremantle, WA
+      [-47.5, 105.0],  // Southern Ocean crossing
+      [-60.0, 97.0],   // Ice edge
+      [-65.3, 93.6],   // Current station (anchored)
+    ],
+  },
+];
+
+// ─── MOCK VEHICLES (Ground / Snow-Cat Convoys) ────────────────────────────────
+export interface MockVehicle {
+  id: string;
+  convoyId: string;
+  name: string;
+  type: 'SNOW_CAT' | 'PISTON_BULLY' | 'HAGGLUND' | 'SLED_TRAIN';
+  coordinates: { lat: number; lng: number };
+  status: 'MOVING' | 'STATIONARY' | 'MAINTENANCE' | 'AT_BASE';
+  speedKmh: number;
+  operator: string;
+  mission: string;
+  fuelPct: number;
+}
+
+export const MOCK_VEHICLES: MockVehicle[] = [
+  {
+    id: 'veh-01',
+    convoyId: 'CONVOY-ALPHA',
+    name: 'PistonBully 300 #1',
+    type: 'PISTON_BULLY',
+    coordinates: { lat: -70.82, lng: 11.65 },  // ~12 km SW of Maitri
+    status: 'MOVING',
+    speedKmh: 18,
+    operator: 'Vikramaditya Das',
+    mission: 'Medical Supply Run: Maitri → Field Camp Schirmacher',
+    fuelPct: 62,
+  },
+  {
+    id: 'veh-02',
+    convoyId: 'CONVOY-BETA',
+    name: 'PistonBully 300 #2',
+    type: 'PISTON_BULLY',
+    coordinates: { lat: -69.52, lng: 76.35 },  // ~15 km NE of Bharati
+    status: 'MOVING',
+    speedKmh: 14,
+    operator: 'Karan Patel',
+    mission: 'Bharati → Stornes Peninsula — Cargo Transfer',
+    fuelPct: 48,
+  },
+  {
+    id: 'veh-03',
+    convoyId: 'CONVOY-GAMMA',
+    name: 'Hägglunds BV206 #1',
+    type: 'HAGGLUND',
+    coordinates: { lat: 78.91, lng: 11.85 },   // Near Himadri, Svalbard
+    status: 'STATIONARY',
+    speedKmh: 0,
+    operator: 'Dr. Preeti Nair',
+    mission: 'Bayelva Sensor Array Maintenance — Stationary Hold',
+    fuelPct: 78,
+  },
+];
+
+// ─── MOCK INCIDENTS ───────────────────────────────────────────────────────────
+export interface MockIncident {
+  id: string;
+  type: 'EQUIPMENT_FAILURE' | 'WEATHER_DELAY' | 'MEDICAL' | 'COMMUNICATION_LOSS' | 'ICE_HAZARD';
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  coordinates: { lat: number; lng: number };
+  title: string;
+  description: string;
+  stationId: string;
+  reportedAt: string;
+  status: 'OPEN' | 'MONITORING' | 'RESOLVED';
+}
+
+export const MOCK_INCIDENTS: MockIncident[] = [
+  {
+    id: 'inc-01',
+    type: 'EQUIPMENT_FAILURE',
+    severity: 'HIGH',
+    coordinates: { lat: -70.78, lng: 11.72 },  // Schirmacher Oasis
+    title: 'Generator Unit B — Power Drop',
+    description: 'Primary generator turbine dropped 40% output. Bypass engaged. Maintenance crew dispatched.',
+    stationId: 'maitri',
+    reportedAt: '2026-09-29T14:30:00Z',
+    status: 'MONITORING',
+  },
+  {
+    id: 'inc-02',
+    type: 'WEATHER_DELAY',
+    severity: 'MEDIUM',
+    coordinates: { lat: -69.55, lng: 76.5 },   // Prydz Bay coastal area
+    title: 'Blizzard — Bharati Coastal Ops Suspended',
+    description: 'Wind gusts 68 kt. Outdoor operations suspended. Convoy BETA stationary hold until window clears.',
+    stationId: 'bharati',
+    reportedAt: '2026-09-29T10:15:00Z',
+    status: 'OPEN',
+  },
+  {
+    id: 'inc-03',
+    type: 'ICE_HAZARD',
+    severity: 'MEDIUM',
+    coordinates: { lat: 78.94, lng: 12.05 },   // Kongsfjorden, Svalbard
+    title: 'Unstable Sea-Ice Reported — Kongsfjorden',
+    description: 'Unexpected sea-ice fractures observed along planned traverse route. Rerouting in progress.',
+    stationId: 'himadri',
+    reportedAt: '2026-09-29T08:00:00Z',
+    status: 'MONITORING',
+  },
+];
