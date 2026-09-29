@@ -8,6 +8,7 @@ import {
   AllocateModal,
   DetailModal
 } from '../components/inventory/InventoryModals';
+import { ResourceAnalytics } from '../components/inventory/ResourceAnalytics';
 
 export const InventoryPage: React.FC = () => {
   const { items, isSeeded, seedInventory } = useInventoryStore();
@@ -123,6 +124,9 @@ export const InventoryPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Resource Analytics Section */}
+      <ResourceAnalytics items={items} />
 
       {modal.type === 'add' && <AddInventoryModal onClose={close} />}
       {modal.type === 'adjust' && modal.item && <AdjustStockModal item={modal.item} onClose={close} />}

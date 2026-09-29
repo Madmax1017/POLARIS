@@ -9,231 +9,173 @@ import { useNavigate } from "react-router-dom";
  * -----------------------------------------------------------------------
  */
 
-const BOOT_SEQUENCE = [
-    { label: "SATELLITE LINK", status: "ONLINE" },
-    { label: "EXPEDITION NETWORK", status: "ONLINE" },
-    { label: "WEATHER INTELLIGENCE", status: "ONLINE" },
-    { label: "RESOURCE MONITORING", status: "ONLINE" },
-    { label: "EMERGENCY SYSTEM", status: "ARMED" },
-];
-
 const MARKERS = [
-    { id: "arctic-01", label: "ARCTIC NODE 01", lat: 84.0, lon: 11.0 },
-    { id: "maitri", label: "MAITRI", lat: -70.76, lon: 11.73 },
-    { id: "bharati", label: "BHARATI", lat: -69.4, lon: 76.19 },
-    { id: "expedition-07", label: "EXPEDITION 07", lat: -75.0, lon: -60.0 },
-    { id: "ncpor", label: "NCPOR · HQ", lat: 15.45, lon: 73.8 },
+  { id: "arctic-01", label: "ARCTIC NODE 01", lat: 84.0, lon: 11.0 },
+  { id: "maitri", label: "MAITRI", lat: -70.76, lon: 11.73 },
+  { id: "bharati", label: "BHARATI", lat: -69.4, lon: 76.19 },
+  { id: "expedition-07", label: "EXPEDITION 07", lat: -75.0, lon: -60.0 },
+  { id: "ncpor", label: "NCPOR · HQ", lat: 15.45, lon: 73.8 },
 ];
 
 export default function PolarisIntro({ onEnter }) {
-    const navigate = useNavigate();
-    const [phase, setPhase] = useState(0);
-    const [bootIndex, setBootIndex] = useState(-1);
-    const [exiting, setExiting] = useState(false);
-    const detailRef = useRef(null);
+  const navigate = useNavigate();
+  const [phase, setPhase] = useState(0);
+  const [exiting, setExiting] = useState(false);
+  const detailRef = useRef(null);
 
-    useEffect(() => {
-        const steps = [
-            () => setPhase(1), // background + logo
-            () => setPhase(2), // globe fades in
-            () => setPhase(3), // headline reveals
-            () => setPhase(4), // CTA active
-        ];
-        const timers = steps.map((fn, i) => setTimeout(fn, 220 + i * 380));
-        return () => timers.forEach(clearTimeout);
-    }, []);
+  useEffect(() => {
+    const steps = [
+      () => setPhase(1), // background + logo
+      () => setPhase(2), // globe fades in
+      () => setPhase(3), // headline reveals
+      () => setPhase(4), // CTA active
+    ];
+    const timers = steps.map((fn, i) => setTimeout(fn, 220 + i * 380));
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
-    useEffect(() => {
-        if (phase < 3) return;
-        let i = 0;
-        const timers = [];
-        const step = () => {
-            setBootIndex(i);
-            i += 1;
-            if (i < BOOT_SEQUENCE.length) {
-                timers.push(setTimeout(step, 260));
-            }
-        };
-        timers.push(setTimeout(step, 200));
-        return () => timers.forEach(clearTimeout);
-    }, [phase]);
+  const handleEnter = useCallback(() => {
+    setExiting(true);
+    setTimeout(() => {
+      if (onEnter) {
+        onEnter();
+      } else {
+        navigate("/dashboard");
+      }
+    }, 620);
+  }, [onEnter, navigate]);
 
-    const handleEnter = useCallback(() => {
-        setExiting(true);
-        setTimeout(() => {
-            if (onEnter) {
-                onEnter();
-            } else {
-                navigate("/dashboard");
-            }
-        }, 620);
-    }, [onEnter, navigate]);
+  const handleExplore = useCallback(() => {
+    detailRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
-    const handleExplore = useCallback(() => {
-        detailRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, []);
+  return (
+    <div className={`polaris-root ${exiting ? "is-exiting" : ""}`}>
+      <style>{POLARIS_CSS}</style>
 
-    return (
-        <div className={`polaris-root ${exiting ? "is-exiting" : ""}`}>
-            <style>{POLARIS_CSS}</style>
-
-            <section className="polaris-hero">
-                <div className="polaris-bg" data-phase={phase >= 1 ? "on" : "off"}>
-                    <div className="polaris-bg-grid" />
-                    <div className="polaris-bg-vignette" />
-                    <div className="polaris-bg-stars" />
-                </div>
-
-                <nav className="polaris-nav" data-phase={phase >= 1 ? "on" : "off"}>
-                    <div className="polaris-nav-brand">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="polaris-mark">
-                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                            <path d="M12 2 L12 22 M2 12 L22 12" stroke="currentColor" strokeWidth="1" opacity="0.35" />
-                            <path d="M12 5 L14 12 L12 19 L10 12 Z" fill="currentColor" opacity="0.9" />
-                        </svg>
-                        <div>
-                            <div className="polaris-nav-title">POLARIS</div>
-                            <div className="polaris-nav-subtitle">NCPOR · POLAR OPERATIONS</div>
-                        </div>
-                    </div>
-                    <div className="polaris-nav-status">
-                        <div className="polaris-status-row">
-                            <span className="polaris-status-dot" />
-                            SAT-LINK ONLINE
-                        </div>
-                        <div className="polaris-status-caption">SYSTEM STATUS</div>
-                    </div>
-                </nav>
-
-                <div className="polaris-hero-grid">
-                    <div className="polaris-hero-copy" data-phase={phase >= 2 ? "on" : "off"}>
-                        <div className="polaris-eyebrow polaris-reveal polaris-delay-1">Polar Operations Command</div>
-
-                        <h1 className="polaris-headline polaris-reveal polaris-delay-2">
-                            <span className="polaris-headline-line">COMMAND THE</span>
-                            <span className="polaris-headline-line polaris-headline-accent">EXTREME.</span>
-                        </h1>
-
-                        <p className="polaris-lede polaris-reveal polaris-delay-3">
-                            One operational picture.
-                            <br />
-                            Every mission. Every person. Every decision.
-                        </p>
-
-                        <p className="polaris-desc polaris-reveal polaris-delay-4">
-                            POLARIS unifies expedition planning, personnel, assets, logistics,
-                            intelligence and emergency response into one resilient command
-                            system built for the world's most extreme environments.
-                        </p>
-
-                        <div className="polaris-cta-row polaris-reveal polaris-delay-5">
-                            <button className="polaris-cta" onClick={handleEnter}>
-                                <span>ENTER COMMAND CENTER</span>
-                                <ArrowRight size={16} className="polaris-cta-arrow" />
-                            </button>
-                            <button className="polaris-cta-secondary" onClick={handleExplore}>
-                                <span>EXPLORE SYSTEM</span>
-                                <ChevronDown size={14} />
-                            </button>
-                        </div>
-
-                        <div className="polaris-boot polaris-reveal polaris-delay-6">
-                            <div className="polaris-boot-title">
-                                <span>POLARIS CORE</span>
-                                <span className="polaris-boot-sub">INITIALIZING…</span>
-                            </div>
-                            <ul className="polaris-boot-list">
-                                {BOOT_SEQUENCE.map((item, i) => {
-                                    const active = bootIndex >= i;
-                                    return (
-                                        <li key={item.label} className={active ? "is-active" : ""}>
-                                            <span className="polaris-boot-label">{item.label}</span>
-                                            <span
-                                                className={`polaris-boot-status ${active ? (item.status === "ARMED" ? "is-armed" : "is-online") : ""
-                                                    }`}
-                                            >
-                                                {active ? item.status : "· · ·"}
-                                            </span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="polaris-hero-globe" data-phase={phase >= 2 ? "on" : "off"}>
-                        <div className="sketchfab-embed-wrapper polaris-sketchfab">
-                            <iframe
-                                title="The sky from the center of the earth"
-                                frameBorder="0"
-                                allowFullScreen
-                                mozallowfullscreen="true"
-                                webkitallowfullscreen="true"
-                                allow="autoplay; fullscreen; xr-spatial-tracking"
-                                xr-spatial-tracking="true"
-                                execution-while-out-of-viewport="true"
-                                execution-while-not-rendered="true"
-                                web-share="true"
-                                src="https://sketchfab.com/models/17cf917d160645b6a57a09c420ed647d/embed?autostart=1&ui_theme=dark&transparent=1&ui_animations=0&ui_infos=0&ui_stop=0&ui_inspector=0&ui_watermark_link=0&ui_watermark=0&ui_hint=0&ui_controls=0"
-                            ></iframe>
-                        </div>
-
-                        <div className="polaris-hud polaris-hud-tr">
-                            <div className="polaris-hud-title">N 82° 14' 52"</div>
-                            <div className="polaris-hud-sub">ARCTIC OPERATIONS ZONE</div>
-                        </div>
-                        <div className="polaris-hud polaris-hud-br">
-                            <div className="polaris-hud-row">
-                                <span>SAT-LINK</span>
-                                <span className="polaris-hud-value polaris-hud-online">
-                                    <span className="polaris-status-dot small" /> CONNECTED
-                                </span>
-                            </div>
-                            <div className="polaris-hud-row">
-                                <span>EXPEDITIONS</span>
-                                <span className="polaris-hud-value">07 ACTIVE</span>
-                            </div>
-                            <div className="polaris-hud-row">
-                                <span>POLAR NODE</span>
-                                <span className="polaris-hud-value">MAITRI</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="polaris-transition-line" />
-            </section>
-
-            <section className="polaris-detail" ref={detailRef}>
-                <div className="polaris-detail-grid">
-                    <div className="polaris-detail-card">
-                        <div className="polaris-detail-index">01</div>
-                        <h3>Expedition Network</h3>
-                        <p>
-                            Live positions, headcounts and mission status across every active
-                            deployment, from Arctic transects to Antarctic stations.
-                        </p>
-                    </div>
-                    <div className="polaris-detail-card">
-                        <div className="polaris-detail-index">02</div>
-                        <h3>Weather Intelligence</h3>
-                        <p>
-                            Continuous polar forecasting fused with satellite and ground
-                            telemetry to flag windows and risk before they close.
-                        </p>
-                    </div>
-                    <div className="polaris-detail-card">
-                        <div className="polaris-detail-index">03</div>
-                        <h3>Emergency Response</h3>
-                        <p>
-                            A single armed protocol layer connecting personnel, assets and
-                            command — ready the moment conditions turn.
-                        </p>
-                    </div>
-                </div>
-            </section>
+      <section className="polaris-hero">
+        <div className="polaris-bg" data-phase={phase >= 1 ? "on" : "off"}>
+          <div className="polaris-bg-grid" />
+          <div className="polaris-bg-vignette" />
+          <div className="polaris-bg-stars" />
         </div>
-    );
+
+        <nav className="polaris-nav" data-phase={phase >= 1 ? "on" : "off"}>
+          <div className="polaris-nav-brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="polaris-mark">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+              <path d="M12 2 L12 22 M2 12 L22 12" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+              <path d="M12 5 L14 12 L12 19 L10 12 Z" fill="currentColor" opacity="0.9" />
+            </svg>
+            <div>
+              <div className="polaris-nav-title">POLARIS</div>
+              <div className="polaris-nav-subtitle">NCPOR · POLAR OPERATIONS</div>
+            </div>
+          </div>
+          <div className="polaris-nav-status">
+            <div className="polaris-status-row">
+              <span className="polaris-status-dot" />
+              SAT-LINK ONLINE
+            </div>
+            <div className="polaris-status-caption">SYSTEM STATUS</div>
+          </div>
+        </nav>
+
+        <div className="polaris-hero-grid">
+          <div className="polaris-hero-copy" data-phase={phase >= 2 ? "on" : "off"}>
+            <h1 className="polaris-hero-title polaris-reveal polaris-delay-1">
+              POLARIS
+            </h1>
+
+            <p className="polaris-hero-desc polaris-reveal polaris-delay-2">
+              Unified mission operations for scientific expeditions in the polar environment.
+            </p>
+
+            <div className="polaris-cta-row polaris-reveal polaris-delay-3">
+              <button className="polaris-cta" onClick={handleEnter}>
+                <span>ENTER COMMAND CENTER</span>
+                <ArrowRight size={16} className="polaris-cta-arrow" />
+              </button>
+              <button className="polaris-cta-secondary" onClick={handleExplore}>
+                <span>EXPLORE SYSTEM</span>
+                <ChevronDown size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="polaris-hero-globe" data-phase={phase >= 2 ? "on" : "off"}>
+            <div className="sketchfab-embed-wrapper polaris-sketchfab">
+              <iframe
+                title="The sky from the center of the earth"
+                frameBorder="0"
+                allowFullScreen
+                mozallowfullscreen="true"
+                webkitallowfullscreen="true"
+                allow="autoplay; fullscreen; xr-spatial-tracking"
+                xr-spatial-tracking="true"
+                execution-while-out-of-viewport="true"
+                execution-while-not-rendered="true"
+                web-share="true"
+                src="https://sketchfab.com/models/17cf917d160645b6a57a09c420ed647d/embed?autostart=1&ui_theme=dark&transparent=1&ui_animations=0&ui_infos=0&ui_stop=0&ui_inspector=0&ui_watermark_link=0&ui_watermark=0&ui_hint=0&ui_controls=0"
+              ></iframe>
+            </div>
+
+            <div className="polaris-hud polaris-hud-tr">
+              <div className="polaris-hud-title">N 82° 14' 52"</div>
+              <div className="polaris-hud-sub">ARCTIC OPERATIONS ZONE</div>
+            </div>
+            <div className="polaris-hud polaris-hud-br">
+              <div className="polaris-hud-row">
+                <span>SAT-LINK</span>
+                <span className="polaris-hud-value polaris-hud-online">
+                  <span className="polaris-status-dot small" /> CONNECTED
+                </span>
+              </div>
+              <div className="polaris-hud-row">
+                <span>EXPEDITIONS</span>
+                <span className="polaris-hud-value">07 ACTIVE</span>
+              </div>
+              <div className="polaris-hud-row">
+                <span>POLAR NODE</span>
+                <span className="polaris-hud-value">MAITRI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="polaris-transition-line" />
+      </section>
+
+      <section className="polaris-detail" ref={detailRef}>
+        <div className="polaris-detail-grid">
+          <div className="polaris-detail-card">
+            <div className="polaris-detail-index">01</div>
+            <h3>Expedition Network</h3>
+            <p>
+              Live positions, headcounts and mission status across every active
+              deployment, from Arctic transects to Antarctic stations.
+            </p>
+          </div>
+          <div className="polaris-detail-card">
+            <div className="polaris-detail-index">02</div>
+            <h3>Weather Intelligence</h3>
+            <p>
+              Continuous polar forecasting fused with satellite and ground
+              telemetry to flag windows and risk before they close.
+            </p>
+          </div>
+          <div className="polaris-detail-card">
+            <div className="polaris-detail-index">03</div>
+            <h3>Emergency Response</h3>
+            <p>
+              A single armed protocol layer connecting personnel, assets and
+              command — ready the moment conditions turn.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 const POLARIS_CSS = `
@@ -356,22 +298,26 @@ const POLARIS_CSS = `
 .polaris-delay-5 { transition-delay: 0.56s; }
 .polaris-delay-6 { transition-delay: 0.74s; }
 
-.polaris-eyebrow {
-  font-family: var(--p-mono); font-size: 11px; letter-spacing: 0.22em; color: var(--p-primary);
-  margin: 0 0 12px 0; text-transform: uppercase;
-}
-.polaris-headline {
-  font-size: clamp(34px, 3.6vw, 64px);
-  line-height: 1.02; font-weight: 700; letter-spacing: -0.015em;
+.polaris-hero-title {
+  font-size: clamp(40px, 4.5vw, 60px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #FFFFFF;
   margin: 0 0 16px 0;
-  display: flex; flex-direction: column;
 }
-.polaris-headline-line { color: #E7E9E7; }
-.polaris-headline-accent { color: #C9D9DE; }
-.polaris-lede { font-size: 18px; line-height: 1.4; color: rgba(207,250,254,0.88); margin: 0 0 12px 0; font-weight: 400; }
-.polaris-desc { font-size: 14px; line-height: 1.55; color: var(--p-muted); max-width: 480px; margin: 0 0 24px 0; }
 
-.polaris-cta-row { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.polaris-hero-desc {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--p-muted);
+  max-width: 500px;
+  margin: 0 0 32px 0;
+  letter-spacing: 0.01em;
+}
+
+.polaris-cta-row { display: flex; align-items: center; gap: 14px; margin-bottom: 0; }
 
 .polaris-cta {
   display: inline-flex; align-items: center; gap: 10px;

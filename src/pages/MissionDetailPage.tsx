@@ -3,11 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, MapPin, Users, Package, Truck, Clock, Shield,
     CheckCircle2, AlertTriangle, XCircle, ChevronRight, Flag,
-    Play, CheckSquare, XSquare, Target
+    Play, CheckSquare, XSquare, Target, Brain, Sparkles
 } from 'lucide-react';
 import { useMissionStore } from '../stores/useMissionStore';
+import { useInventoryStore } from '../stores/useInventoryStore';
+import { useReportStore } from '../stores/useReportStore';
 import { MissionStatus } from '../types';
-import { NorthstarIntelligenceModal } from '../components/intelligence/NorthstarIntelligenceModal';
+import { MissionIntelligenceReport } from '../types/analysis';
+import { generateMissionAnalysis } from '../services/analysisService';
+import { MissionIntelligenceReportModal } from '../components/intelligence/MissionIntelligenceReportModal';
 
 const L = 'text-[9px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] block mb-1';
 const CARD = 'bg-[var(--surface-elevated)] border border-[var(--border-subtle)] rounded-xl p-4';
@@ -47,8 +51,14 @@ const SEV_COLORS: Record<string, string> = {
 export const MissionDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [showIntelligence, setShowIntelligence] = useState(false);
     const { missions, setMissionStatus } = useMissionStore();
+    const { items: inventoryItems } = useInventoryStore();
+    const addReport = useReportStore((s) => s.addReport);
+
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [activeReport, setActiveReport] = useState<MissionIntelligenceReport | null>(null);
+    const [showModal, setShowModal] = useState(false);
+
     const mission = missions.find(m => m.id === id);
 
     if (!mission) return (
@@ -57,6 +67,17 @@ export const MissionDetailPage: React.FC = () => {
             <button onClick={() => navigate('/missions')} className="mt-4 text-xs font-mono text-[var(--polar-cyan)] hover:underline cursor-pointer">← Back to Missions</button>
         </div>
     );
+
+    const handleRunAnalysis = async () => {
+        setShowModal(true);
+        setIsAnalyzing(true);
+        setActiveReport(null);
+
+        const report = await generateMissionAnalysis(mission, inventoryItems);
+        addReport(report);
+        setActiveReport(report);
+        setIsAnalyzing(false);
+    };
 
     const sorted = [...mission.checkpoints].sort((a, b) => a.order - b.order);
     const fmt = (dt: string) => { try { return new Date(dt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return dt; } };
@@ -93,8 +114,8 @@ export const MissionDetailPage: React.FC = () => {
                 </div>
                 {/* Lifecycle Controls */}
                 <div className="flex flex-wrap gap-2 shrink-0">
-                    <button onClick={() => setShowIntelligence(true)} className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--polar-cyan)]/40 text-[var(--polar-cyan)] hover:bg-[var(--polar-cyan)]/10 rounded-lg text-xs font-mono font-bold transition cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.15)]">
-                        ANALYZE MISSION
+                    <button onClick={handleRunAnalysis} className="flex items-center gap-1.5 px-3 py-1.5 border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 bg-cyan-500/5 rounded-lg text-xs font-mono font-bold transition cursor-pointer shadow-[0_0_15px_rgba(56,189,248,0.15)]">
+                        <Brain className="w-4 h-4" /> ANALYZE MISSION
                     </button>
                     {lifecycleBtns.filter(b => b.show.includes(mission.status)).map(btn => (
                         <button key={btn.label} onClick={() => setMissionStatus(mission.id, btn.targetStatus)}
@@ -294,7 +315,15 @@ export const MissionDetailPage: React.FC = () => {
                     </div>
                 </div>
             )}
-            {showIntelligence && <NorthstarIntelligenceModal mission={mission} onClose={() => setShowIntelligence(false)} />}
+            {(showModal || isAnalyzing) && (
+                <MissionIntelligenceReportModal
+                    report={activeReport}
+                    isLoading={isAnalyzing}
+                    missionName={mission.name}
+                    onClose={() => setShowModal(false)}
+                    onRegenerate={handleRunAnalysis}
+                />
+            )}
         </div>
     );
 };

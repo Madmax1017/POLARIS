@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Compass, Plus, MapPin, Users, Package, Truck, Clock, CheckCircle2, AlertTriangle, XCircle, Eye, ChevronRight } from 'lucide-react';
+import { Compass, Plus, MapPin, Users, Package, Truck, Clock, CheckCircle2, AlertTriangle, XCircle, Eye, ChevronRight, Brain, Sparkles } from 'lucide-react';
 import { Mission } from '../types';
 import { useMissionStore } from '../stores/useMissionStore';
+import { useInventoryStore } from '../stores/useInventoryStore';
+import { useReportStore } from '../stores/useReportStore';
+import { generateMissionAnalysis } from '../services/analysisService';
+import { MissionIntelligenceReportModal } from '../components/intelligence/MissionIntelligenceReportModal';
+import { MissionIntelligenceReport } from '../types/analysis';
 
 const STATUS_TABS = ['ALL', 'PLANNED', 'READY', 'ACTIVE', 'COMPLETED', 'CANCELLED'] as const;
 
@@ -27,7 +32,7 @@ const READINESS_ICON: Record<string, React.ReactNode> = {
   'NOT READY': <XCircle className="w-3.5 h-3.5 text-rose-400" />,
 };
 
-const MissionCard: React.FC<{ mission: Mission }> = ({ mission }) => {
+const MissionCard: React.FC<{ mission: Mission; onAnalyze: (mission: Mission) => void }> = ({ mission, onAnalyze }) => {
   const navigate = useNavigate();
   const sorted = [...mission.checkpoints].sort((a, b) => a.order - b.order);
   const fmt = (dt: string) => { try { return new Date(dt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + new Date(dt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }); } catch { return dt; } };
@@ -80,17 +85,26 @@ const MissionCard: React.FC<{ mission: Mission }> = ({ mission }) => {
       </div>
 
       {/* Bottom */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
         <div className="flex items-center gap-1.5">
           {READINESS_ICON[mission.overallReadiness]}
           <span className="text-[10px] font-mono text-[var(--text-secondary)]">READINESS: <span className="font-bold">{mission.overallReadiness}</span></span>
         </div>
-        <button
-          onClick={() => navigate(`/missions/${mission.id}`)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-lg text-xs font-mono font-bold text-[var(--text-primary)] hover:border-[var(--polar-cyan)] hover:text-[var(--polar-cyan)] transition cursor-pointer"
-        >
-          <Eye className="w-3.5 h-3.5" /> VIEW MISSION
-        </button>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onAnalyze(mission)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 rounded-lg text-xs font-mono font-bold transition cursor-pointer"
+          >
+            <Brain className="w-3.5 h-3.5" /> CREATE ANALYSIS
+          </button>
+          <button
+            onClick={() => navigate(`/missions/${mission.id}`)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-lg text-xs font-mono font-bold text-[var(--text-primary)] hover:border-[var(--polar-cyan)] hover:text-[var(--polar-cyan)] transition cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5" /> VIEW MISSION
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -100,15 +114,34 @@ export const ExpeditionsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { missions, seedMissions, isSeeded } = useMissionStore();
+  const { items: inventoryItems, seedInventory, isSeeded: isInventorySeeded } = useInventoryStore();
+  const addReport = useReportStore((s) => s.addReport);
+
   const [activeTab, setActiveTab] = useState<typeof STATUS_TABS[number]>('ALL');
   const [createdId, setCreatedId] = useState<string | null>(null);
 
+  const [analyzingMission, setAnalyzingMission] = useState<Mission | null>(null);
+  const [activeReport, setActiveReport] = useState<MissionIntelligenceReport | null>(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+
   useEffect(() => { if (!isSeeded) seedMissions(); }, [isSeeded]);
+  useEffect(() => { if (!isInventorySeeded) seedInventory(); }, [isInventorySeeded]);
 
   useEffect(() => {
     const id = searchParams.get('created');
     if (id) { setCreatedId(id); setTimeout(() => setCreatedId(null), 6000); }
   }, [searchParams]);
+
+  const handleAnalyzeMission = async (mission: Mission) => {
+    setAnalyzingMission(mission);
+    setIsLoadingAnalysis(true);
+    setActiveReport(null);
+
+    const report = await generateMissionAnalysis(mission, inventoryItems);
+    addReport(report);
+    setActiveReport(report);
+    setIsLoadingAnalysis(false);
+  };
 
   const filtered = missions.filter(m => activeTab === 'ALL' || m.status === activeTab);
   const counts = STATUS_TABS.reduce((acc, tab) => {
@@ -162,8 +195,8 @@ export const ExpeditionsPage: React.FC = () => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-3 py-2 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0 border-b-2 transition cursor-pointer ${activeTab === tab
-                ? 'border-[var(--polar-cyan)] text-[var(--polar-cyan)]'
-                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+              ? 'border-[var(--polar-cyan)] text-[var(--polar-cyan)]'
+              : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
               }`}
           >
             {tab} {counts[tab] > 0 && <span className="ml-1">({counts[tab]})</span>}
@@ -182,8 +215,24 @@ export const ExpeditionsPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filtered.map(m => <MissionCard key={m.id} mission={m} />)}
+          {filtered.map(m => <MissionCard key={m.id} mission={m} onAnalyze={handleAnalyzeMission} />)}
         </div>
+      )}
+
+      {/* Mission Intelligence Modal */}
+      {(analyzingMission || isLoadingAnalysis) && (
+        <MissionIntelligenceReportModal
+          report={activeReport}
+          isLoading={isLoadingAnalysis}
+          missionName={analyzingMission?.name || 'Mission'}
+          onClose={() => {
+            setAnalyzingMission(null);
+            setActiveReport(null);
+          }}
+          onRegenerate={() => {
+            if (analyzingMission) handleAnalyzeMission(analyzingMission);
+          }}
+        />
       )}
     </div>
   );
