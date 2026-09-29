@@ -36,7 +36,15 @@ import {
     COMMAND_ACTIVITY,
     SYSTEM_STATUS,
 } from '../data/commanderData';
-import { MOCK_ALERTS } from '../data/mockData';
+import {
+    MOCK_ALERTS,
+    MOCK_VESSELS,
+    MOCK_VEHICLES,
+    MOCK_INCIDENTS,
+    MOCK_CARGO_ROUTES,
+} from '../data/mockData';
+import { getTileProvider } from '../config/mapTileProviders';
+import { Ship } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { useThemeStore } from '../stores/useThemeStore';
@@ -144,10 +152,11 @@ export const CommanderDashboardPage: React.FC = () => {
     const cntWx = useCountUp(COMMANDER_METRICS.weatherRisks);
     const cntAlerts = useCountUp(COMMANDER_METRICS.criticalAlerts);
 
-    // Map tile URL — Stadia Alidade Smooth Dark/Light (free, no API key required)
-    const tileUrl = isDark
-        ? `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png`
-        : `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png`;
+    // Tile provider from modular config — OSM Standard (light) / OSM Dark via CSS filter
+    const tileProvider = getTileProvider(isDark);
+    const tileFilterStyle = tileProvider.cssFilter
+        ? `.leaflet-tile-pane { filter: ${tileProvider.cssFilter}; } .leaflet-overlay-pane { filter: none !important; }`
+        : '';
 
     // Station markers data
     const stationMarkers = [
@@ -290,19 +299,28 @@ export const CommanderDashboardPage: React.FC = () => {
 
                     {/* Map Container */}
                     <div className="h-[420px] relative" style={{ background: isDark ? '#0D1117' : '#E8F0F5' }}>
+                        {/* Dark mode tile filter — scoped to tile pane only, markers unaffected */}
+                        {tileFilterStyle && <style>{tileFilterStyle}</style>}
+
                         <MapContainer
                             center={[-20, 30]}
                             zoom={2}
                             style={{ width: '100%', height: '100%' }}
                             className="z-0"
                         >
+                            {/* OSM TileLayer — no API key required */}
                             <TileLayer
-                                key={theme}
-                                url={tileUrl}
-                                attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                maxZoom={20}
-                                tileSize={256}
-                                eventHandlers={{ tileerror: () => setTileError(true) }}
+                                key={tileProvider.id}
+                                url={tileProvider.url}
+                                attribution={tileProvider.attribution}
+                                maxZoom={tileProvider.maxZoom}
+                                tileSize={tileProvider.tileSize}
+                                subdomains={tileProvider.subdomains}
+                                detectRetina={tileProvider.detectRetina}
+                                eventHandlers={{
+                                    tileerror: () => setTileError(true),
+                                    tileload: () => setTileError(false),
+                                }}
                             />
 
                             {/* Station Markers */}
@@ -312,7 +330,7 @@ export const CommanderDashboardPage: React.FC = () => {
                                     position={[sm.lat, sm.lng]}
                                     icon={makeIcon(sm.color, sm.label, sm.pulse)}
                                 >
-                                    <Popup className="custom-popup">
+                                    <Popup>
                                         <div style={{ fontFamily: 'monospace', fontSize: '11px', minWidth: '160px' }}>
                                             <div style={{ fontWeight: 700, marginBottom: '6px', fontSize: '12px' }}>
                                                 {sm.label === 'MTR' ? 'MAITRI STATION' : sm.label === 'BHT' ? 'BHARATI STATION' : sm.label === 'HMD' ? 'HIMADRI STATION' : 'NCPOR HQ'}
@@ -331,23 +349,126 @@ export const CommanderDashboardPage: React.FC = () => {
                                 <Polyline
                                     key={i}
                                     positions={coords}
-                                    pathOptions={{
-                                        color: '#A8C7D1',
-                                        weight: 1.5,
-                                        opacity: 0.5,
-                                        dashArray: '6 6',
-                                    }}
+                                    pathOptions={{ color: '#A8C7D1', weight: 1.5, opacity: 0.5, dashArray: '6 6' }}
                                 />
                             ))}
+
+                            {/* Cargo Routes */}
+                            {(mapFilter === 'ALL' || mapFilter === 'CARGO') && MOCK_CARGO_ROUTES.map(route => (
+                                <Polyline
+                                    key={route.id}
+                                    positions={route.waypoints}
+                                    pathOptions={{ color: route.color, weight: 2, opacity: 0.65 }}
+                                >
+                                    <Popup>
+                                        <div style={{ fontFamily: 'monospace', fontSize: '11px', minWidth: '180px' }}>
+                                            <div style={{ fontWeight: 700, marginBottom: 4, fontSize: '12px' }}>CARGO ROUTE</div>
+                                            <div style={{ opacity: 0.8 }}>{route.label}</div>
+                                        </div>
+                                    </Popup>
+                                </Polyline>
+                            ))}
+
+                            {/* Vessel Markers */}
+                            {(mapFilter === 'ALL' || mapFilter === 'CARGO') && MOCK_VESSELS.map(v => (
+                                <Marker
+                                    key={v.id}
+                                    position={[v.coordinates.lat, v.coordinates.lng]}
+                                    icon={L.divIcon({
+                                        className: '',
+                                        html: `<div style="width:28px;height:28px;border-radius:50%;background:#38BDF822;border:2px solid #38BDF8;display:flex;align-items:center;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                              <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+                                              <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/>
+                                              <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/>
+                                            </svg>
+                                        </div>`,
+                                        iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14],
+                                    })}
+                                >
+                                    <Popup>
+                                        <div style={{ fontFamily: 'monospace', fontSize: '11px', minWidth: '180px' }}>
+                                            <div style={{ fontWeight: 700, marginBottom: 4, fontSize: '12px' }}>{v.name}</div>
+                                            <div style={{ opacity: 0.8 }}>{v.type.replace('_', ' ')} · {v.status}</div>
+                                            <div style={{ opacity: 0.6, marginTop: 2 }}>→ {v.destination}</div>
+                                            {v.etaHours > 0 && <div style={{ opacity: 0.6 }}>ETA: {Math.floor(v.etaHours / 24)}d {v.etaHours % 24}h</div>}
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+
+                            {/* Vehicle / Convoy Markers */}
+                            {(mapFilter === 'ALL' || mapFilter === 'CARGO') && MOCK_VEHICLES.map(v => (
+                                <Marker
+                                    key={v.id}
+                                    position={[v.coordinates.lat, v.coordinates.lng]}
+                                    icon={L.divIcon({
+                                        className: '',
+                                        html: `<div style="width:26px;height:26px;border-radius:5px;background:${v.status === 'MOVING' ? '#22C55E22' : '#F59E0B22'};border:2px solid ${v.status === 'MOVING' ? '#22C55E' : '#F59E0B'};display:flex;align-items:center;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${v.status === 'MOVING' ? '#22C55E' : '#F59E0B'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                              <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9h-3"/>
+                                              <circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+                                            </svg>
+                                        </div>`,
+                                        iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13],
+                                    })}
+                                >
+                                    <Popup>
+                                        <div style={{ fontFamily: 'monospace', fontSize: '11px', minWidth: '180px' }}>
+                                            <div style={{ fontWeight: 700, marginBottom: 4, fontSize: '12px' }}>{v.convoyId}</div>
+                                            <div style={{ opacity: 0.8 }}>{v.name} · {v.status}</div>
+                                            <div style={{ opacity: 0.6, marginTop: 2, fontSize: '10px' }}>{v.mission}</div>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            ))}
+
+                            {/* Incident Markers */}
+                            {(mapFilter === 'ALL' || mapFilter === 'ALERTS') && MOCK_INCIDENTS.map(inc => {
+                                const col = inc.severity === 'CRITICAL' ? '#EF4444' : inc.severity === 'HIGH' ? '#F97316' : '#EAB308';
+                                return (
+                                    <Marker
+                                        key={inc.id}
+                                        position={[inc.coordinates.lat, inc.coordinates.lng]}
+                                        icon={L.divIcon({
+                                            className: '',
+                                            html: `<div style="width:26px;height:26px;border-radius:50%;background:${col}22;border:2px solid ${col};display:flex;align-items:center;justify-content:center;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                                  <path d="M12 9v4"/><path d="M12 17h.01"/>
+                                                </svg>
+                                            </div>`,
+                                            iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -13],
+                                        })}
+                                    >
+                                        <Popup>
+                                            <div style={{ fontFamily: 'monospace', fontSize: '11px', minWidth: '200px' }}>
+                                                <div style={{ fontWeight: 700, color: col, marginBottom: 4, fontSize: '12px' }}>{inc.severity} — {inc.type.replace(/_/g, ' ')}</div>
+                                                <div style={{ fontWeight: 600, marginBottom: 2 }}>{inc.title}</div>
+                                                <div style={{ opacity: 0.7, fontSize: '10px' }}>{inc.description}</div>
+                                            </div>
+                                        </Popup>
+                                    </Marker>
+                                );
+                            })}
                         </MapContainer>
 
                         {/* Map overlay legend */}
-                        <div className="absolute bottom-3 left-3 z-10 flex items-center gap-3 text-[9px] font-mono bg-[var(--surface-primary)]/90 backdrop-blur-sm border border-[var(--border-primary)] rounded-lg px-3 py-2">
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C85C62]" />ALERT</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C49A55]" />WARNING</span>
-                            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#63A68A]" />OPTIMAL</span>
-                            <span className="flex items-center gap-1.5 text-[var(--text-muted)]"><Clock className="w-2.5 h-2.5" />Updated 2m ago</span>
+                        <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-2 text-[9px] font-mono bg-[var(--surface-primary)]/90 backdrop-blur-sm border border-[var(--border-primary)] rounded-lg px-3 py-2">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#C85C62]" />ALERT STN</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#63A68A]" />OK STN</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#38BDF8]" />VESSEL</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-[#22C55E]" />CONVOY</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F97316]" />INCIDENT</span>
+                            <span className="flex items-center gap-1 text-[var(--text-muted)]"><Clock className="w-2 h-2" />2m ago</span>
                         </div>
+
+                        {/* Tile error notice */}
+                        {tileError && (
+                            <div className="absolute top-3 right-3 z-10 bg-[var(--surface-primary)]/90 border border-amber-500/30 rounded-lg px-3 py-1.5 text-[9px] font-mono text-amber-500">
+                                ⚠ Map tile load error — check network
+                            </div>
+                        )}
                     </div>
 
                     <Link
