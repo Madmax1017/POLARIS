@@ -26,6 +26,7 @@ import { StationId } from '../types';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useNetworkStore } from '../stores/useNetworkStore';
 import { ThemeToggle } from '../components/ThemeToggle';
+import logoUrl from '../assets/logo.png';
 
 interface NavItem {
   name: string;
@@ -119,9 +120,7 @@ export const DashboardLayout: React.FC = () => {
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-primary)] flex items-center justify-center font-bold text-[var(--polar-cyan)]">
-              P
-            </div>
+            <img src={logoUrl} alt="Polaris Logo" className="w-8 h-8 rounded-full border border-[var(--border-primary)] shadow-sm" />
             <span className="font-bold tracking-wider text-[var(--text-primary)] text-lg font-mono">POLARIS</span>
           </div>
         </div>
@@ -151,9 +150,7 @@ export const DashboardLayout: React.FC = () => {
           {/* POLARIS Logo Header */}
           <div className="h-16 px-6 flex items-center justify-between border-b border-[var(--border-primary)]">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-8 h-8 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-primary)] flex items-center justify-center text-[var(--polar-cyan)] font-extrabold text-lg group-hover:border-[var(--polar-cyan)] transition-colors">
-                <Radio className="w-4 h-4" />
-              </div>
+              <img src={logoUrl} alt="Polaris" className="w-10 h-10 rounded-full border border-[var(--border-primary)] group-hover:border-[var(--polar-cyan)] transition-colors shadow-sm" />
               <div className="flex flex-col">
                 <span className="font-extrabold tracking-widest text-base text-[var(--text-primary)] font-mono leading-none">
                   POLARIS

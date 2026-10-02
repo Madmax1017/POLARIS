@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import logoUrl from "../assets/logo.png";
 
 /**
  * POLARIS — Polar Operations Command intro
@@ -62,11 +63,7 @@ export default function PolarisIntro({ onEnter }) {
 
         <nav className="polaris-nav" data-phase={phase >= 1 ? "on" : "off"}>
           <div className="polaris-nav-brand">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="polaris-mark">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-              <path d="M12 2 L12 22 M2 12 L22 12" stroke="currentColor" strokeWidth="1" opacity="0.35" />
-              <path d="M12 5 L14 12 L12 19 L10 12 Z" fill="currentColor" opacity="0.9" />
-            </svg>
+            <img src={logoUrl} alt="Polaris Logo" className="polaris-mark" style={{ width: 32, height: 32, borderRadius: '50%' }} />
             <div>
               <div className="polaris-nav-title">POLARIS</div>
               <div className="polaris-nav-subtitle">NCPOR · POLAR OPERATIONS</div>

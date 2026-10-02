@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Radio, Shield, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, AlertCircle } from 'lucide-react';
 import polarShipBg from '../assets/polar-ship-bg.jpg';
+import logoUrl from '../assets/logo.png';
 import { MOCK_USERS } from '../data/mockData';
 import { useAuthStore } from '../stores/useAuthStore';
 
@@ -96,8 +97,8 @@ export const LoginPage: React.FC = () => {
         <header className="flex items-start justify-between">
           {/* Top-Left Title & Tagline */}
           <div className="flex items-center space-x-3.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 shadow-md text-white">
-              <Radio className="h-6 w-6" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--surface-elevated)] border border-[var(--border-primary)] shadow-md overflow-hidden p-1 bg-white">
+              <img src={logoUrl} alt="Polaris Logo" className="h-full w-full object-contain" />
             </div>
             <div>
               <h1 className="font-mono text-2xl font-bold tracking-wider text-[var(--text-primary)] sm:text-3xl">
@@ -142,8 +143,8 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={() => fillDemoAccount('field@polaris.res.in')}
                   className={`p-2 rounded-lg text-left border transition-colors cursor-pointer truncate font-mono text-[11px] ${email === 'field@polaris.res.in'
-                      ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
-                      : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
+                    : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
                     }`}
                 >
                   field@polaris.res.in
@@ -152,8 +153,8 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={() => fillDemoAccount('station@polaris.res.in')}
                   className={`p-2 rounded-lg text-left border transition-colors cursor-pointer truncate font-mono text-[11px] ${email === 'station@polaris.res.in'
-                      ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
-                      : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
+                    : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
                     }`}
                 >
                   station@polaris.res.in
@@ -162,8 +163,8 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={() => fillDemoAccount('logistics@polaris.res.in')}
                   className={`p-2 rounded-lg text-left border transition-colors cursor-pointer truncate font-mono text-[11px] ${email === 'logistics@polaris.res.in'
-                      ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
-                      : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
+                    : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
                     }`}
                 >
                   logistics@polaris.res.in
@@ -172,8 +173,8 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={() => fillDemoAccount('r.verma@ncpor.res.in')}
                   className={`p-2 rounded-lg text-left border transition-colors cursor-pointer truncate font-mono text-[11px] ${email === 'r.verma@ncpor.res.in'
-                      ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
-                      : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
+                    ? 'bg-[var(--polar-cyan)]/10 text-[var(--polar-cyan)] border-[var(--polar-cyan)]/40 font-bold'
+                    : 'bg-[var(--surface-primary)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:bg-[var(--surface-input)] hover:text-[var(--text-primary)]'
                     }`}
                 >
                   r.verma@ncpor.res.in
